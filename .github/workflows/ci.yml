@@ -1,0 +1,98 @@
+name: AgentControl CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Code Quality & Type Safety
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Linting & Verification Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy
+
+      - name: Run Ruff Linter
+        run: ruff check .
+
+  test-suite:
+    name: Unit, Integration & Security Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Project Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest pytest-asyncio pytest-cov httpx
+
+      - name: Run Pytest Test Suite
+        run: |
+          pytest -v --cov=packages --cov=apps/api --cov-report=term-missing
+
+      - name: Run Core Benchmarks Suite
+        run: |
+          python benchmarks/run_benchmarks.py
+
+  build-dashboard:
+    name: Build React + TypeScript Dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: apps/dashboard/package-lock.json
+
+      - name: Build Dashboard Assets
+        working-directory: apps/dashboard
+        run: |
+          npm ci
+          npm run build
+
+  docker-build:
+    name: Build & Verify Container Images
+    runs-on: ubuntu-latest
+    needs: [test-suite, build-dashboard]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/docker/Dockerfile.api
+          push: false
+          tags: agentcontrol/api:test
+
+      - name: Build Dashboard Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/docker/Dockerfile.dashboard
+          push: false
+          tags: agentcontrol/dashboard:test

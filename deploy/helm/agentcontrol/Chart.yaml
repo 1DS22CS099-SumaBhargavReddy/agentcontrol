@@ -1,0 +1,17 @@
+apiVersion: v2
+name: agentcontrol
+description: A Helm chart for deploying AgentControl - Open-Source Zero-Trust Control Plane for Production AI Agents
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ai-agents
+  - control-plane
+  - policy-engine
+  - guardrails
+  - opentelemetry
+  - mcp
+home: https://github.com/agentcontrol/agentcontrol
+maintainers:
+  - name: AgentControl Maintainers
+    email: maintainers@agentcontrol.io

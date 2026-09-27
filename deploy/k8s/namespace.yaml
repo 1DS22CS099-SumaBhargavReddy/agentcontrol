@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agentcontrol
+  labels:
+    app.kubernetes.io/name: agentcontrol
+    app.kubernetes.io/part-of: agentcontrol-control-plane
