@@ -4,10 +4,8 @@ Endpoints for calculating action risk scores and determining autonomous vs human
 """
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.auth.service import AuthenticatedUser, get_current_user
-from apps.api.db.session import get_db
 from packages.decision_engine.engine import (
     DecisionRequest,
     DecisionResponse,

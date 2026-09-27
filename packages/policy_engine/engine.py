@@ -4,35 +4,36 @@ Declarative, versioned, environment-aware policy evaluation for production AI ag
 """
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import yaml
 from pydantic import BaseModel, Field
 
 
 class PolicyRuleConstraint(BaseModel):
     """Specific constraints for tool execution."""
-    disallowed_arguments: List[str] = Field(default_factory=list, description="Keys that cannot be present in arguments")
-    argument_patterns: Dict[str, str] = Field(default_factory=dict, description="Regex patterns that argument values must match")
-    forbidden_values: Dict[str, List[Any]] = Field(default_factory=dict, description="Values strictly forbidden for specific keys")
-    max_cost_usd: Optional[float] = Field(default=None, description="Max cost permitted for this operation")
+    disallowed_arguments: list[str] = Field(default_factory=list, description="Keys that cannot be present in arguments")
+    argument_patterns: dict[str, str] = Field(default_factory=dict, description="Regex patterns that argument values must match")
+    forbidden_values: dict[str, list[Any]] = Field(default_factory=dict, description="Values strictly forbidden for specific keys")
+    max_cost_usd: float | None = Field(default=None, description="Max cost permitted for this operation")
 
 
 class PolicyRule(BaseModel):
     id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     target_tool: str = Field(..., description="Tool name or pattern (e.g., 'database.drop_table', 'kubernetes.*', '*')")
-    target_tag: Optional[str] = Field(default=None, description="Tag target (e.g. 'destructive', 'network')")
+    target_tag: str | None = Field(default=None, description="Tag target (e.g. 'destructive', 'network')")
     allowed: bool = Field(default=True, description="Whether this operation is permitted at all")
     require_human_approval: bool = Field(default=False, description="Whether human approval is required")
-    constraints: Optional[PolicyRuleConstraint] = None
-    reason: Optional[str] = None
+    constraints: PolicyRuleConstraint | None = None
+    reason: str | None = None
 
 
 class EnvironmentPolicy(BaseModel):
     version: str = "1.0.0"
     environment: str = Field(..., description="Environment (e.g., 'production', 'staging', 'development')")
-    rules: List[PolicyRule] = Field(default_factory=list)
+    rules: list[PolicyRule] = Field(default_factory=list)
     default_require_approval_for_destructive: bool = True
 
 
@@ -47,18 +48,18 @@ class PolicyEvaluationRequest(BaseModel):
     agent_id: str
     environment: str
     tool_name: str
-    tool_tags: List[str] = Field(default_factory=list)
-    arguments: Dict[str, Any] = Field(default_factory=dict)
+    tool_tags: list[str] = Field(default_factory=list)
+    arguments: dict[str, Any] = Field(default_factory=dict)
     estimated_cost_usd: float = 0.0
-    context: Dict[str, Any] = Field(default_factory=dict)
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 class PolicyEvaluationResult(BaseModel):
     allowed: bool
     requires_human_approval: bool
-    violations: List[PolicyViolation] = Field(default_factory=list)
-    matched_rules: List[str] = Field(default_factory=list)
-    approval_reasons: List[str] = Field(default_factory=list)
+    violations: list[PolicyViolation] = Field(default_factory=list)
+    matched_rules: list[str] = Field(default_factory=list)
+    approval_reasons: list[str] = Field(default_factory=list)
 
 
 class PolicyEngine:
@@ -68,7 +69,7 @@ class PolicyEngine:
     """
 
     def __init__(self):
-        self._policies_by_env: Dict[str, EnvironmentPolicy] = {}
+        self._policies_by_env: dict[str, EnvironmentPolicy] = {}
 
     def register_policy(self, policy: EnvironmentPolicy) -> None:
         self._policies_by_env[policy.environment.lower()] = policy
@@ -79,7 +80,7 @@ class PolicyEngine:
             raise ValueError("Invalid policy YAML: root must contain 'policies' mapping")
 
         for env_name, env_spec in data["policies"].items():
-            rules: List[PolicyRule] = []
+            rules: list[PolicyRule] = []
             env_destructive_approval = env_spec.get("destructive_operations", {}).get("require_human_approval", True)
 
             # Parse hierarchical service.action policies from YAML
@@ -135,9 +136,9 @@ class PolicyEngine:
 
         allowed = True
         requires_approval = False
-        violations: List[PolicyViolation] = []
-        matched_rules: List[str] = []
-        approval_reasons: List[str] = []
+        violations: list[PolicyViolation] = []
+        matched_rules: list[str] = []
+        approval_reasons: list[str] = []
 
         # Tag-based baseline check: if action is tagged destructive, apply environment baseline
         if "destructive" in [t.lower() for t in request.tool_tags] and default_destructive_approval:

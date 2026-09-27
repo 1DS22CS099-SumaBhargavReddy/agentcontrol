@@ -4,9 +4,11 @@ Provider-agnostic LLM router with multi-provider abstraction, capability/cost/la
 and resilient fallback chains.
 """
 
-from enum import Enum
 import time
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from enum import Enum
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -39,8 +41,8 @@ class ModelGenerateRequest(BaseModel):
     task: str
     complexity: TaskComplexity = TaskComplexity.MEDIUM
     prompt: str
-    system_prompt: Optional[str] = None
-    tools: Optional[List[Dict[str, Any]]] = None
+    system_prompt: str | None = None
+    tools: list[dict[str, Any]] | None = None
     max_tokens: int = 1024
     temperature: float = 0.0
     timeout_seconds: float = 15.0
@@ -54,11 +56,11 @@ class ModelGenerateResponse(BaseModel):
     completion_tokens: int
     latency_ms: float
     fallback_used: bool = False
-    attempted_models: List[str] = Field(default_factory=list)
+    attempted_models: list[str] = Field(default_factory=list)
 
 
 # Standard catalog of registered models
-DEFAULT_MODEL_SPECS: List[ModelSpec] = [
+DEFAULT_MODEL_SPECS: list[ModelSpec] = [
     ModelSpec(id="fast-classifier", provider=ModelProvider.GEMINI, model_name="gemini-1.5-flash", cost_tier="low", latency_tier="fast"),
     ModelSpec(id="cheap-analyzer", provider=ModelProvider.OPENAI, model_name="gpt-4o-mini", cost_tier="low", latency_tier="fast"),
     ModelSpec(id="local-offline", provider=ModelProvider.OLLAMA, model_name="ollama/llama3", cost_tier="low", latency_tier="fast"),
@@ -73,9 +75,9 @@ class ModelRouter:
     based on task complexity, cost policies, and provides automatic failover.
     """
 
-    def __init__(self, specs: Optional[List[ModelSpec]] = None):
-        self.specs: Dict[str, ModelSpec] = {s.id: s for s in (specs or DEFAULT_MODEL_SPECS)}
-        self._provider_handlers: Dict[str, Callable[..., Any]] = {}
+    def __init__(self, specs: list[ModelSpec] | None = None):
+        self.specs: dict[str, ModelSpec] = {s.id: s for s in (specs or DEFAULT_MODEL_SPECS)}
+        self._provider_handlers: dict[str, Callable[..., Any]] = {}
 
     def register_provider_handler(self, provider: str, handler: Callable[..., Any]) -> None:
         """Registers an execution handler for a provider (e.g. mock, openai client, ollama)."""
@@ -107,7 +109,7 @@ class ModelRouter:
         # Default moderate
         return available[0]
 
-    def get_fallback_chain(self, primary_model: ModelSpec) -> List[ModelSpec]:
+    def get_fallback_chain(self, primary_model: ModelSpec) -> list[ModelSpec]:
         """Calculates prioritized fallback models in case primary provider fails."""
         chain = [primary_model]
         # Alternate provider with similar capabilities
@@ -119,7 +121,7 @@ class ModelRouter:
     async def generate(
         self,
         request: ModelGenerateRequest,
-        primary_model_id: Optional[str] = None
+        primary_model_id: str | None = None
     ) -> ModelGenerateResponse:
         """
         Executes generation through the router with automatic multi-model fallback.
@@ -130,7 +132,7 @@ class ModelRouter:
             primary = self.select_model(complexity=request.complexity)
 
         fallback_chain = self.get_fallback_chain(primary)
-        attempted: List[str] = []
+        attempted: list[str] = []
         last_error = None
 
         for idx, model in enumerate(fallback_chain):

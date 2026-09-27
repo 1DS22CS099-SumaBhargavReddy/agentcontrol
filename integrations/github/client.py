@@ -4,7 +4,8 @@ Provides GitHub repository inspection, diff analysis, and pull request creation.
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -24,10 +25,10 @@ class GitHubGateway:
     """
 
     def __init__(self):
-        self._prs: List[PullRequest] = []
+        self._prs: list[PullRequest] = []
         self._counter = 100
 
-    async def get_recent_commits(self, repository: str, limit: int = 5) -> List[Dict[str, Any]]:
+    async def get_recent_commits(self, repository: str, limit: int = 5) -> list[dict[str, Any]]:
         return [
             {
                 "commit_hash": "a1b2c3d4e5f6",
@@ -49,8 +50,8 @@ class GitHubGateway:
         title: str,
         head: str,
         base: str = "main",
-        body: Optional[str] = None
-    ) -> Dict[str, Any]:
+        body: str | None = None
+    ) -> dict[str, Any]:
         self._counter += 1
         now_str = datetime.now(timezone.utc).isoformat()
         pr = PullRequest(

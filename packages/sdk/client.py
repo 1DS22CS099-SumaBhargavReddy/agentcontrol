@@ -4,10 +4,11 @@ Developer-friendly client for integrating the zero-trust control plane into any 
 """
 
 import asyncio
-from datetime import datetime, timezone
 import functools
 import inspect
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
+
 import httpx
 from pydantic import BaseModel
 
@@ -17,10 +18,10 @@ class ToolExecutionResponse(BaseModel):
     status: str
     risk_score: float
     risk_level: str
-    reason_codes: List[str]
-    approval_id: Optional[str] = None
-    execution_result: Optional[Any] = None
-    error: Optional[str] = None
+    reason_codes: list[str]
+    approval_id: str | None = None
+    execution_result: Any | None = None
+    error: str | None = None
     duration_ms: float = 0.0
     trace_id: str
 
@@ -36,8 +37,8 @@ class AgentClient:
     async def execute_tool(
         self,
         tool_name: str,
-        arguments: Dict[str, Any],
-        idempotency_key: Optional[str] = None,
+        arguments: dict[str, Any],
+        idempotency_key: str | None = None,
         wait_for_approval: bool = True,
         approval_poll_interval: float = 2.0,
         approval_timeout: float = 300.0
@@ -96,11 +97,11 @@ class AgentControl:
     Main SDK entrypoint for AgentControl control plane.
     """
 
-    def __init__(self, endpoint: str = "http://localhost:8000", api_key: Optional[str] = None):
+    def __init__(self, endpoint: str = "http://localhost:8000", api_key: str | None = None):
         self.endpoint = endpoint.rstrip("/")
         self.api_key = api_key
 
-    def _get_headers(self) -> Dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
@@ -115,9 +116,9 @@ class AgentControl:
         name: str,
         environment: str = "production",
         owner: str = "platform-team",
-        description: Optional[str] = None,
-        capabilities: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        description: str | None = None,
+        capabilities: list[str] | None = None
+    ) -> dict[str, Any]:
         url = f"{self.endpoint}/agents"
         payload = {
             "name": name,
@@ -136,9 +137,9 @@ class AgentControl:
         name: str,
         description: str,
         risk_level: str = "medium",
-        tags: Optional[List[str]] = None,
-        parameters_schema: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        tags: list[str] | None = None,
+        parameters_schema: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         url = f"{self.endpoint}/tools"
         payload = {
             "name": name,
@@ -152,27 +153,27 @@ class AgentControl:
             resp.raise_for_status()
             return resp.json()
 
-    async def approve(self, approval_id: str, reason: str = "Approved by operator") -> Dict[str, Any]:
+    async def approve(self, approval_id: str, reason: str = "Approved by operator") -> dict[str, Any]:
         url = f"{self.endpoint}/approvals/{approval_id}/approve"
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.post(url, json={"reason": reason}, headers=self._get_headers())
             resp.raise_for_status()
             return resp.json()
 
-    async def reject(self, approval_id: str, reason: str = "Rejected by operator") -> Dict[str, Any]:
+    async def reject(self, approval_id: str, reason: str = "Rejected by operator") -> dict[str, Any]:
         url = f"{self.endpoint}/approvals/{approval_id}/reject"
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.post(url, json={"reason": reason}, headers=self._get_headers())
             resp.raise_for_status()
             return resp.json()
 
-    def tool(self, name: str, description: str, risk_level: str = "medium", tags: Optional[List[str]] = None):
+    def tool(self, name: str, description: str, risk_level: str = "medium", tags: list[str] | None = None):
         """Decorator to register a Python function as a managed tool."""
         def decorator(func: Callable[..., Any]):
             # Infer parameter schema
             sig = inspect.signature(func)
             props = {}
-            for param_name, param in sig.parameters.items():
+            for param_name in sig.parameters:
                 props[param_name] = {"type": "string"}
 
             @functools.wraps(func)

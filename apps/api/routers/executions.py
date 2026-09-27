@@ -3,24 +3,23 @@ Unified Action Execution & Control Plane Interceptor Router
 Coordinates Permission -> Policy -> Risk -> Approval -> Execution -> Audit pipeline.
 """
 
-from datetime import datetime, timezone
 import uuid
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy import desc, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.audit.service import AuditLogger
 from apps.api.auth.service import AuthenticatedUser, get_current_user, require_role
 from apps.api.db.models import (
-    Agent,
     AgentRun,
     ApprovalRequest,
     ExecutionRecord,
     Permission,
     Policy,
-    Tool,
     ToolCall,
 )
 from apps.api.db.session import get_db
@@ -110,8 +109,8 @@ runtime_engine.register_tool(
 class RunCreate(BaseModel):
     agent_id: str
     environment: str = "production"
-    trace_id: Optional[str] = None
-    metadata_info: Dict[str, Any] = Field(default_factory=dict)
+    trace_id: str | None = None
+    metadata_info: dict[str, Any] = Field(default_factory=dict)
 
 
 class RunResponse(BaseModel):
@@ -124,17 +123,17 @@ class RunResponse(BaseModel):
     total_tokens: int
     total_cost_usd: float
     started_at: str
-    completed_at: Optional[str]
+    completed_at: str | None
 
 
 class ToolExecuteRequest(BaseModel):
     agent_id: str
     environment: str = "production"
     tool_name: str
-    arguments: Dict[str, Any] = Field(default_factory=dict)
-    run_id: Optional[str] = None
-    trace_id: Optional[str] = None
-    idempotency_key: Optional[str] = None
+    arguments: dict[str, Any] = Field(default_factory=dict)
+    run_id: str | None = None
+    trace_id: str | None = None
+    idempotency_key: str | None = None
     bypass_approval_check: bool = False  # internal flag used strictly after approval sign-off
 
 
@@ -143,10 +142,10 @@ class ToolExecuteResponse(BaseModel):
     status: str  # approved_and_executed, approval_required, permission_denied, policy_blocked, execution_failed, security_blocked
     risk_score: float
     risk_level: str
-    reason_codes: List[str]
-    approval_id: Optional[str] = None
-    execution_result: Optional[Any] = None
-    error: Optional[str] = None
+    reason_codes: list[str]
+    approval_id: str | None = None
+    execution_result: Any | None = None
+    error: str | None = None
     duration_ms: float = 0.0
     trace_id: str
 
@@ -232,10 +231,10 @@ async def execute_tool_call(
             "gen_ai.tool.name": payload.tool_name,
             "environment": payload.environment
         }
-    ) as span:
+    ):
         # 1. SECURITY SCAN: Browser SSRF & Prompt Injection
         # Check URLs in arguments
-        for k, v in payload.arguments.items():
+        for v in payload.arguments.values():
             if isinstance(v, str) and (v.startswith("http://") or v.startswith("https://") or "://" in v):
                 scan_res = BrowserScanner.scan_url(v)
                 if not scan_res.is_safe:

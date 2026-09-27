@@ -3,7 +3,6 @@ Unit tests for AgentControl Risk Engine
 Tests deterministic multi-factor scoring, blast radius evaluation, and approval triggers.
 """
 
-import pytest
 from packages.risk_engine.engine import (
     RiskAssessmentRequest,
     RiskEngine,

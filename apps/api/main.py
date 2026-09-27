@@ -3,8 +3,9 @@ AgentControl: Production Control Plane for AI Agents
 FastAPI Core Backend Application
 """
 
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select

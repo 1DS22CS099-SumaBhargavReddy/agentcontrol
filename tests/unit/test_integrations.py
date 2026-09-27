@@ -4,13 +4,12 @@ Tests LangGraph middleware, OpenAI adapter, Kubernetes gateway, GitHub gateway, 
 """
 
 import pytest
+
+from integrations.github import GitHubGateway
+from integrations.kubernetes import KubernetesGateway
 from integrations.langgraph import AgentControlToolNode
 from integrations.openai import OpenAIControlledTool
-from integrations.kubernetes import KubernetesGateway
-from integrations.github import GitHubGateway
-from integrations.mcp.gateway import MCPGateway
 from packages.sdk.client import AgentControl, ToolExecutionResponse
-from packages.tool_runtime.runtime import ToolRuntimeEngine
 
 
 @pytest.mark.asyncio

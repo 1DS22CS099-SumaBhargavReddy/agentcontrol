@@ -4,7 +4,8 @@ Supports PostgreSQL, Supabase (with asyncpg), and SQLite (with aiosqlite for zer
 """
 
 import os
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,

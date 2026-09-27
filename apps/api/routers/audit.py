@@ -3,7 +3,8 @@ Audit Trail & OpenTelemetry Tracing Router
 Queryable append-only audit trail and trace span inspector.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy import desc, select
@@ -21,25 +22,25 @@ router = APIRouter(tags=["Audit & Traces"])
 class AuditEventResponse(BaseModel):
     id: str
     timestamp: str
-    trace_id: Optional[str]
+    trace_id: str | None
     agent_id: str
-    user_id: Optional[str]
+    user_id: str | None
     action: str
-    tool_name: Optional[str]
-    risk_level: Optional[str]
-    policy_decision: Optional[str]
-    approval_status: Optional[str]
-    execution_status: Optional[str]
+    tool_name: str | None
+    risk_level: str | None
+    policy_decision: str | None
+    approval_status: str | None
+    execution_status: str | None
     signature_sha256: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
 
 
-@router.get("/audit", response_model=List[AuditEventResponse])
+@router.get("/audit", response_model=list[AuditEventResponse])
 async def list_audit_events(
-    agent_id: Optional[str] = None,
-    tool_name: Optional[str] = None,
-    action: Optional[str] = None,
-    risk_level: Optional[str] = None,
+    agent_id: str | None = None,
+    tool_name: str | None = None,
+    action: str | None = None,
+    risk_level: str | None = None,
     limit: int = Query(default=100, le=500),
     db: AsyncSession = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)

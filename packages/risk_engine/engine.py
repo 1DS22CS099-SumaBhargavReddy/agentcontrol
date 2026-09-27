@@ -4,7 +4,8 @@ Deterministic multi-factor risk assessment for AI agent tool actions.
 """
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -20,18 +21,18 @@ class RiskAssessmentRequest(BaseModel):
     environment: str
     tool_name: str
     tool_inherent_risk: str = "medium"  # low, medium, high, critical
-    tool_tags: List[str] = Field(default_factory=list)
-    arguments: Dict[str, Any] = Field(default_factory=dict)
-    context: Dict[str, Any] = Field(default_factory=dict)
+    tool_tags: list[str] = Field(default_factory=list)
+    arguments: dict[str, Any] = Field(default_factory=dict)
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 class RiskAssessmentResult(BaseModel):
     risk_score: float = Field(..., ge=0.0, le=1.0, description="Calculated normalized risk score")
     risk_level: RiskLevel
-    reason_codes: List[str]
+    reason_codes: list[str]
     requires_human_approval: bool
     blast_radius: str  # localized, moderate, broad, catastrophic
-    factors_breakdown: Dict[str, float]
+    factors_breakdown: dict[str, float]
 
 
 class RiskEngine:
@@ -56,8 +57,8 @@ class RiskEngine:
     }
 
     def evaluate(self, request: RiskAssessmentRequest) -> RiskAssessmentResult:
-        factors: Dict[str, float] = {}
-        reason_codes: List[str] = []
+        factors: dict[str, float] = {}
+        reason_codes: list[str] = []
 
         # Determine inherent tool traits
         tool_lower = request.tool_name.lower()

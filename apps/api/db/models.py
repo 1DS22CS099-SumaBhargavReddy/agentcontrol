@@ -3,14 +3,14 @@ AgentControl Relational Database Models
 Production schemas for PostgreSQL / Supabase with comprehensive indexes.
 """
 
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
+
 from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
     Float,
-    ForeignKey,
     Index,
     Integer,
     String,
@@ -18,6 +18,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.types import JSON, TypeDecorator
+
 from apps.api.db.session import Base
 
 

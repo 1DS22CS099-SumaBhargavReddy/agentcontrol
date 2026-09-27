@@ -3,13 +3,13 @@ AgentControl Authentication & Authorization Service
 Supports API Keys (acp_live_...), Clerk JWT, Supabase Auth tokens, and standard OAuth2/JWT.
 """
 
-from datetime import datetime, timezone
 import hashlib
 import os
 import secrets
-from typing import Any, Dict, List, Optional
-from fastapi import Depends, Header, HTTPException, status
+from typing import Any
+
 import jwt
+from fastapi import Depends, Header, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,11 +26,11 @@ class AuthenticatedUser(BaseModel):
     user_id: str
     identity_type: str  # api_key, clerk, supabase, oauth2, dev_bypass
     role: str  # admin, approver, agent_executor, auditor
-    scopes: List[str] = []
-    metadata: Dict[str, Any] = {}
+    scopes: list[str] = []
+    metadata: dict[str, Any] = {}
 
 
-def generate_api_key(name: str, owner: str, role: str = "agent_executor", scopes: Optional[List[str]] = None) -> tuple[str, ApiKey]:
+def generate_api_key(name: str, owner: str, role: str = "agent_executor", scopes: list[str] | None = None) -> tuple[str, ApiKey]:
     """Generates a secure API key with prefix indexing and SHA-256 storage."""
     prefix = secrets.token_hex(8)  # 16 chars
     secret = secrets.token_urlsafe(32)
@@ -49,7 +49,7 @@ def generate_api_key(name: str, owner: str, role: str = "agent_executor", scopes
     return raw_key, db_key
 
 
-async def verify_api_key(raw_key: str, db: AsyncSession) -> Optional[AuthenticatedUser]:
+async def verify_api_key(raw_key: str, db: AsyncSession) -> AuthenticatedUser | None:
     if not raw_key.startswith("acp_live_"):
         return None
 
@@ -79,7 +79,7 @@ async def verify_api_key(raw_key: str, db: AsyncSession) -> Optional[Authenticat
     return None
 
 
-def verify_jwt_token(token: str) -> Optional[AuthenticatedUser]:
+def verify_jwt_token(token: str) -> AuthenticatedUser | None:
     """
     Verifies Supabase or Clerk JWT tokens.
     Extracts identity, role, and claims.
@@ -121,8 +121,8 @@ def verify_jwt_token(token: str) -> Optional[AuthenticatedUser]:
 
 
 async def get_current_user(
-    authorization: Optional[str] = Header(None),
-    x_api_key: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
+    x_api_key: str | None = Header(None),
     db: AsyncSession = Depends(get_db)
 ) -> AuthenticatedUser:
     """FastAPI dependency for authenticating requests."""

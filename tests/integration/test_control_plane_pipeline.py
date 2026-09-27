@@ -5,8 +5,9 @@ Tests the complete flow: Permission -> Policy -> Risk -> Approval -> Sandbox Exe
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from apps.api.main import app, seed_initial_demo_data
+
 from apps.api.db.session import init_db
+from apps.api.main import app, seed_initial_demo_data
 
 
 @pytest.fixture(autouse=True)

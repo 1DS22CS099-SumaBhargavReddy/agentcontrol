@@ -6,8 +6,8 @@ Browser URL security scanning (SSRF defense, protocol checks) and prompt-injecti
 import ipaddress
 import re
 import socket
-from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
+
 from pydantic import BaseModel, Field
 
 
@@ -15,17 +15,17 @@ class UrlScanResult(BaseModel):
     is_safe: bool
     url: str
     risk_level: str  # low, high, critical
-    reason: Optional[str] = None
-    resolved_ip: Optional[str] = None
-    blocked_category: Optional[str] = None
+    reason: str | None = None
+    resolved_ip: str | None = None
+    blocked_category: str | None = None
 
 
 class InjectionScanResult(BaseModel):
     is_safe: bool
     risk_score: float = Field(..., ge=0.0, le=1.0)
-    detected_patterns: List[str] = Field(default_factory=list)
-    sanitized_text: Optional[str] = None
-    reason: Optional[str] = None
+    detected_patterns: list[str] = Field(default_factory=list)
+    sanitized_text: str | None = None
+    reason: str | None = None
 
 
 class BrowserScanner:
@@ -159,7 +159,7 @@ class PromptInjectionScanner:
         if not text or not isinstance(text, str):
             return InjectionScanResult(is_safe=True, risk_score=0.0)
 
-        matches: List[str] = []
+        matches: list[str] = []
         for pattern, label in cls.INJECTION_PATTERNS:
             if re.search(pattern, text):
                 matches.append(label)

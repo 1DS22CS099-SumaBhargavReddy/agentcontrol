@@ -4,18 +4,19 @@ Handles asynchronous tasks: approval expiration sweeper, webhook dispatching, an
 """
 
 import asyncio
-from datetime import datetime, timezone
 import logging
 import os
 import sys
+from datetime import datetime, timezone
 
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from sqlalchemy import select, update
-from apps.api.db.session import AsyncSessionLocal, init_db
-from apps.api.db.models import ApprovalRequest, ToolCall
+from sqlalchemy import select
+
 from apps.api.audit.service import AuditLogger
+from apps.api.db.models import ApprovalRequest, ToolCall
+from apps.api.db.session import AsyncSessionLocal, init_db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("agentcontrol.worker")

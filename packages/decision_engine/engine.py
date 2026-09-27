@@ -4,7 +4,8 @@ Provider-independent decision abstraction with deterministic override guarantees
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -16,19 +17,19 @@ class DecisionOutcome(str):
 
 class DecisionRequest(BaseModel):
     question: str
-    options: List[str] = Field(default_factory=lambda: [DecisionOutcome.APPROVE, DecisionOutcome.REJECT, DecisionOutcome.HUMAN_REVIEW])
-    context: Dict[str, Any] = Field(default_factory=dict)
-    agent_id: Optional[str] = None
-    environment: Optional[str] = None
+    options: list[str] = Field(default_factory=lambda: [DecisionOutcome.APPROVE, DecisionOutcome.REJECT, DecisionOutcome.HUMAN_REVIEW])
+    context: dict[str, Any] = Field(default_factory=dict)
+    agent_id: str | None = None
+    environment: str | None = None
 
 
 class DecisionResponse(BaseModel):
     decision: str
     confidence: float = Field(..., ge=0.0, le=1.0)
-    reason_codes: List[str] = Field(default_factory=list)
+    reason_codes: list[str] = Field(default_factory=list)
     provider_used: str
     deterministic_override: bool = False
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class BaseDecisionProvider(ABC):
@@ -95,7 +96,7 @@ class HybridDecisionProvider(BaseDecisionProvider):
     - In ambiguous or borderline zones, queries an intelligent model provider.
     """
 
-    def __init__(self, rule_provider: Optional[RuleBasedDecisionProvider] = None, model_provider: Optional[BaseDecisionProvider] = None):
+    def __init__(self, rule_provider: RuleBasedDecisionProvider | None = None, model_provider: BaseDecisionProvider | None = None):
         self.rule_provider = rule_provider or RuleBasedDecisionProvider()
         self.model_provider = model_provider
 

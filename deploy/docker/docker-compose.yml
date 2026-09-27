@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: agentcontrol_secret_pass
       POSTGRES_DB: agentcontrol
     ports:
-      - "5432:5432"
+      - "5438:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
     image: redis:7-alpine
     container_name: agentcontrol-redis
     ports:
-      - "6379:6379"
+      - "6385:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -39,7 +39,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       PORT: 8000
     ports:
-      - "8000:8000"
+      - "8008:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,7 +66,7 @@ services:
       dockerfile: deploy/docker/Dockerfile.dashboard
     container_name: agentcontrol-dashboard
     ports:
-      - "3000:80"
+      - "3008:80"
     depends_on:
       - api
 

@@ -3,7 +3,6 @@ Unit tests for AgentControl Permission Engine
 Validates fine-grained permissions, wildcard matching, environment isolation, and explicit deny precedence.
 """
 
-import pytest
 from packages.permission_engine.engine import (
     PermissionCheckRequest,
     PermissionEffect,

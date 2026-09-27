@@ -3,7 +3,9 @@ AgentControl Model Context Protocol (MCP) Gateway
 Discovers tools from MCP servers and binds them to the zero-trust control plane.
 """
 
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
+
 import httpx
 from pydantic import BaseModel, Field
 
@@ -12,14 +14,14 @@ from packages.tool_runtime.runtime import ToolDefinition, ToolRuntimeEngine
 
 class MCPToolSchema(BaseModel):
     name: str
-    description: Optional[str] = ""
-    inputSchema: Dict[str, Any] = Field(default_factory=dict)
+    description: str | None = ""
+    inputSchema: dict[str, Any] = Field(default_factory=dict)
 
 
 class MCPDiscoveryResult(BaseModel):
     server_endpoint: str
     discovered_tools_count: int
-    tools: List[ToolDefinition]
+    tools: list[ToolDefinition]
 
 
 class MCPGateway:
@@ -30,12 +32,12 @@ class MCPGateway:
 
     def __init__(self, runtime_engine: ToolRuntimeEngine):
         self.runtime_engine = runtime_engine
-        self._mcp_servers: Dict[str, str] = {}  # tool_name -> server_endpoint
+        self._mcp_servers: dict[str, str] = {}  # tool_name -> server_endpoint
 
     async def discover_and_register_tools(
         self,
         server_endpoint: str,
-        auth_token: Optional[str] = None
+        auth_token: str | None = None
     ) -> MCPDiscoveryResult:
         """
         Discovers tools via MCP HTTP/JSON-RPC protocol and registers them into the runtime.
@@ -53,7 +55,7 @@ class MCPGateway:
             "params": {}
         }
 
-        registered_tools: List[ToolDefinition] = []
+        registered_tools: list[ToolDefinition] = []
 
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
@@ -93,7 +95,7 @@ class MCPGateway:
         self,
         server_endpoint: str,
         raw_tool_name: str,
-        auth_token: Optional[str] = None
+        auth_token: str | None = None
     ) -> Callable[..., Any]:
         """Creates an async proxy caller that communicates with the MCP server."""
         async def proxy_call(**arguments):

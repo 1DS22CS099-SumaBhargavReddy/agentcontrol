@@ -8,13 +8,14 @@ import json
 import os
 import sys
 import time
+
 from httpx import ASGITransport, AsyncClient
 
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from apps.api.main import app, seed_initial_demo_data
 from apps.api.db.session import init_db
+from apps.api.main import app, seed_initial_demo_data
 
 
 async def run_benchmark_suite():
@@ -26,7 +27,7 @@ async def run_benchmark_suite():
     await seed_initial_demo_data()
 
     scenarios_path = os.path.join(os.path.dirname(__file__), "scenarios.json")
-    with open(scenarios_path, "r", encoding="utf-8") as f:
+    with open(scenarios_path, encoding="utf-8") as f:
         scenarios = json.load(f)
 
     transport = ASGITransport(app=app)

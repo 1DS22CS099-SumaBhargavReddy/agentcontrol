@@ -4,7 +4,8 @@ Provides cluster interaction operations with fine-grained parameter validation a
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -25,21 +26,21 @@ class KubernetesGateway:
 
     def __init__(self):
         # Simulated cluster state
-        self._pods: Dict[str, PodStatus] = {
+        self._pods: dict[str, PodStatus] = {
             "production/auth-service-789": PodStatus(name="auth-service-789", namespace="production", status="CrashLoopBackOff", restart_count=12, ready=False, cpu_usage_cores=1.8),
             "production/billing-api-1": PodStatus(name="billing-api-1", namespace="production", status="Running", restart_count=0, ready=True, cpu_usage_cores=0.2),
             "production/payment-gateway-42": PodStatus(name="payment-gateway-42", namespace="production", status="Running", restart_count=1, ready=True, cpu_usage_cores=0.4),
         }
 
-    async def get_pod(self, namespace: str, pod: str) -> Optional[Dict[str, Any]]:
+    async def get_pod(self, namespace: str, pod: str) -> dict[str, Any] | None:
         key = f"{namespace}/{pod}"
         p = self._pods.get(key)
         return p.dict() if p else None
 
-    async def list_pods(self, namespace: str = "production") -> List[Dict[str, Any]]:
+    async def list_pods(self, namespace: str = "production") -> list[dict[str, Any]]:
         return [p.dict() for p in self._pods.values() if p.namespace == namespace]
 
-    async def restart_pod(self, namespace: str, pod: str) -> Dict[str, Any]:
+    async def restart_pod(self, namespace: str, pod: str) -> dict[str, Any]:
         key = f"{namespace}/{pod}"
         now_str = datetime.now(timezone.utc).isoformat()
         if key in self._pods:
@@ -57,7 +58,7 @@ class KubernetesGateway:
             "healthy": True
         }
 
-    async def rollback_deployment(self, namespace: str, deployment: str, target_revision: Optional[int] = None) -> Dict[str, Any]:
+    async def rollback_deployment(self, namespace: str, deployment: str, target_revision: int | None = None) -> dict[str, Any]:
         return {
             "status": "rolled_back",
             "deployment": deployment,

@@ -18,14 +18,14 @@ Scenario:
 import asyncio
 import os
 import sys
-import time
+
 from httpx import ASGITransport, AsyncClient
 
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from apps.api.main import app, seed_initial_demo_data
 from apps.api.db.session import init_db
+from apps.api.main import app, seed_initial_demo_data
 
 
 def print_banner(step: str, title: str):

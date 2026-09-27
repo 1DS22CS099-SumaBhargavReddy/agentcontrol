@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY pyproject.toml .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir "fastapi[all]" "uvicorn[standard]" "sqlalchemy[asyncio]" "asyncpg" "pydantic>=2.0" "pyyaml" "httpx" "opentelemetry-api" "opentelemetry-sdk"
+    pip install --no-cache-dir "fastapi[all]" "uvicorn[standard]" "sqlalchemy[asyncio]" "asyncpg" "pydantic>=2.0" "pyyaml" "httpx" "opentelemetry-api" "opentelemetry-sdk" "pyjwt>=2.8.0"
 
 COPY apps/ apps/
 COPY packages/ packages/

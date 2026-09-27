@@ -3,7 +3,6 @@ Unit tests for AgentControl Declarative Policy Engine
 Tests YAML parsing, environment overrides, disallowed argument restrictions, and regex patterns.
 """
 
-import pytest
 from packages.policy_engine.engine import (
     PolicyEngine,
     PolicyEvaluationRequest,

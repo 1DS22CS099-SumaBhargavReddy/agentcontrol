@@ -3,10 +3,11 @@ AgentControl Cryptographic Tamper-Resistant Audit Logger
 Append-only hash-chained audit logging for complete forensic compliance.
 """
 
-from datetime import datetime, timezone
 import hashlib
 import json
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any
+
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,10 +33,10 @@ class AuditLogger:
         cls,
         timestamp_str: str,
         agent_id: str,
-        user_id: Optional[str],
+        user_id: str | None,
         action: str,
-        tool_name: Optional[str],
-        payload: Dict[str, Any],
+        tool_name: str | None,
+        payload: dict[str, Any],
         previous_hash: str
     ) -> str:
         serialized_payload = json.dumps(payload, sort_keys=True)
@@ -48,14 +49,14 @@ class AuditLogger:
         db: AsyncSession,
         agent_id: str,
         action: str,
-        user_id: Optional[str] = None,
-        tool_name: Optional[str] = None,
-        risk_level: Optional[str] = None,
-        policy_decision: Optional[str] = None,
-        approval_status: Optional[str] = None,
-        execution_status: Optional[str] = None,
-        trace_id: Optional[str] = None,
-        payload: Optional[Dict[str, Any]] = None
+        user_id: str | None = None,
+        tool_name: str | None = None,
+        risk_level: str | None = None,
+        policy_decision: str | None = None,
+        approval_status: str | None = None,
+        execution_status: str | None = None,
+        trace_id: str | None = None,
+        payload: dict[str, Any] | None = None
     ) -> AuditEvent:
         # Get previous hash
         stmt = select(AuditEvent).order_by(desc(AuditEvent.timestamp)).limit(1)
@@ -97,7 +98,7 @@ class AuditLogger:
         return event
 
     @classmethod
-    async def verify_chain_integrity(cls, db: AsyncSession, limit: int = 100) -> Dict[str, Any]:
+    async def verify_chain_integrity(cls, db: AsyncSession, limit: int = 100) -> dict[str, Any]:
         """Validates the audit chain integrity against retroactive tampering."""
         stmt = select(AuditEvent).order_by(AuditEvent.timestamp.asc()).limit(limit)
         res = await db.execute(stmt)

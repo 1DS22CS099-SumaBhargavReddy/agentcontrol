@@ -4,7 +4,7 @@
 
 **Open-Source Zero-Trust Control Plane for Production AI Agents**
 
-[![CI/CD](https://github.com/agentcontrol/agentcontrol/actions/workflows/ci.yml/badge.svg)](https://github.com/agentcontrol/agentcontrol/actions)
+[![CI/CD](https://github.com/1DS22CS099-SumaBhargavReddy/agentcontrol/actions/workflows/ci.yml/badge.svg)](https://github.com/1DS22CS099-SumaBhargavReddy/agentcontrol/actions)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com)
@@ -107,7 +107,7 @@ Modern organizations are rapidly deploying AI agents that can reason, invoke too
 Spin up the complete stack (PostgreSQL, Redis, AgentControl API, Background Worker, and Dashboard):
 
 ```bash
-git clone https://github.com/agentcontrol/agentcontrol.git
+git clone https://github.com/1DS22CS099-SumaBhargavReddy/agentcontrol.git
 cd agentcontrol
 docker compose -f deploy/docker/docker-compose.yml up -d
 ```

@@ -4,7 +4,8 @@ Manages human-in-the-loop pending approval queues, signatures, and timeouts.
 """
 
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import desc, select
@@ -23,16 +24,16 @@ class ApprovalCreate(BaseModel):
     agent_id: str
     environment: str
     tool_name: str
-    parameters: Dict[str, Any] = Field(default_factory=dict)
+    parameters: dict[str, Any] = Field(default_factory=dict)
     risk_score: float
     risk_level: str
-    reason_codes: List[str] = Field(default_factory=list)
+    reason_codes: list[str] = Field(default_factory=list)
     requested_by: str = "agent-system"
     expires_in_minutes: int = 60
 
 
 class ApprovalDecision(BaseModel):
-    reason: Optional[str] = Field(default=None, description="Human reviewer rationale")
+    reason: str | None = Field(default=None, description="Human reviewer rationale")
 
 
 class ApprovalResponse(BaseModel):
@@ -41,20 +42,20 @@ class ApprovalResponse(BaseModel):
     agent_id: str
     environment: str
     tool_name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
     risk_score: float
     risk_level: str
-    reason_codes: List[str]
+    reason_codes: list[str]
     status: str  # pending, approved, rejected, expired
     requested_by: str
-    approved_by: Optional[str]
-    decision_reason: Optional[str]
+    approved_by: str | None
+    decision_reason: str | None
     expires_at: str
     created_at: str
     updated_at: str
 
 
-def _to_utc(dt: Optional[datetime]) -> Optional[datetime]:
+def _to_utc(dt: datetime | None) -> datetime | None:
     if dt is None:
         return None
     return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
@@ -122,10 +123,10 @@ async def create_approval_request(
     )
 
 
-@router.get("", response_model=List[ApprovalResponse])
+@router.get("", response_model=list[ApprovalResponse])
 async def list_approvals(
-    status_filter: Optional[str] = None,
-    agent_id: Optional[str] = None,
+    status_filter: str | None = None,
+    agent_id: str | None = None,
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)

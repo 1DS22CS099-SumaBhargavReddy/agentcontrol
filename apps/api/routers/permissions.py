@@ -3,8 +3,9 @@ Permission Engine Router
 Manage fine-grained permission rules and perform live permission verifications.
 """
 
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Any
+
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,8 +31,8 @@ class PermissionCreate(BaseModel):
     resource: str = Field(..., description="e.g. 'pods', 'ec2', 'pr', '*'")
     action: str = Field(..., description="e.g. 'read', 'write', 'delete', 'restart', '*'")
     effect: str = Field(default="allow", description="'allow' or 'deny'")
-    conditions: Dict[str, Any] = Field(default_factory=dict)
-    description: Optional[str] = None
+    conditions: dict[str, Any] = Field(default_factory=dict)
+    description: str | None = None
 
 
 class PermissionResponse(BaseModel):
@@ -42,8 +43,8 @@ class PermissionResponse(BaseModel):
     resource: str
     action: str
     effect: str
-    conditions: Dict[str, Any]
-    description: Optional[str]
+    conditions: dict[str, Any]
+    description: str | None
     created_at: str
 
 
@@ -81,10 +82,10 @@ async def create_permission(
     )
 
 
-@router.get("", response_model=List[PermissionResponse])
+@router.get("", response_model=list[PermissionResponse])
 async def list_permissions(
-    agent_id: Optional[str] = None,
-    environment: Optional[str] = None,
+    agent_id: str | None = None,
+    environment: str | None = None,
     db: AsyncSession = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
 ):

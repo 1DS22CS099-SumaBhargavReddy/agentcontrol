@@ -4,11 +4,13 @@ Sandboxed, resilient execution with timeouts, retries, idempotency, and rollback
 """
 
 import asyncio
-from datetime import datetime, timezone
-from enum import Enum
 import inspect
 import time
-from typing import Any, Callable, Coroutine, Dict, List, Optional
+from collections.abc import Callable
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from packages.security_guard.scanner import PromptInjectionScanner
@@ -27,9 +29,9 @@ class ExecutionStatus(str, Enum):
 class ToolDefinition(BaseModel):
     name: str
     description: str
-    parameters_schema: Dict[str, Any] = Field(default_factory=dict)
+    parameters_schema: dict[str, Any] = Field(default_factory=dict)
     risk_level: str = "medium"  # low, medium, high, critical
-    tags: List[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
     version: str = "1.0.0"
     owner: str = "platform-team"
     is_mcp_discovered: bool = False
@@ -39,22 +41,22 @@ class ToolDefinition(BaseModel):
 
 class ToolExecutionRequest(BaseModel):
     execution_id: str
-    idempotency_key: Optional[str] = None
+    idempotency_key: str | None = None
     agent_id: str
     environment: str
     tool_name: str
-    arguments: Dict[str, Any] = Field(default_factory=dict)
-    timeout_seconds: Optional[float] = None
+    arguments: dict[str, Any] = Field(default_factory=dict)
+    timeout_seconds: float | None = None
     enable_retries: bool = True
     rollback_on_failure: bool = False
 
 
 class ToolExecutionResult(BaseModel):
     execution_id: str
-    idempotency_key: Optional[str] = None
+    idempotency_key: str | None = None
     status: ExecutionStatus
-    output: Optional[Any] = None
-    error: Optional[str] = None
+    output: Any | None = None
+    error: str | None = None
     duration_ms: float = 0.0
     retry_attempts: int = 0
     rollback_performed: bool = False
@@ -67,16 +69,16 @@ class ToolRuntimeEngine:
     """
 
     def __init__(self):
-        self._tools: Dict[str, ToolDefinition] = {}
-        self._handlers: Dict[str, Callable[..., Any]] = {}
-        self._rollback_handlers: Dict[str, Callable[..., Any]] = {}
-        self._idempotency_store: Dict[str, ToolExecutionResult] = {}
+        self._tools: dict[str, ToolDefinition] = {}
+        self._handlers: dict[str, Callable[..., Any]] = {}
+        self._rollback_handlers: dict[str, Callable[..., Any]] = {}
+        self._idempotency_store: dict[str, ToolExecutionResult] = {}
 
     def register_tool(
         self,
         tool: ToolDefinition,
-        handler: Optional[Callable[..., Any]] = None,
-        rollback_handler: Optional[Callable[..., Any]] = None
+        handler: Callable[..., Any] | None = None,
+        rollback_handler: Callable[..., Any] | None = None
     ) -> None:
         self._tools[tool.name] = tool
         if handler:
@@ -84,10 +86,10 @@ class ToolRuntimeEngine:
         if rollback_handler:
             self._rollback_handlers[tool.name] = rollback_handler
 
-    def get_tool(self, name: str) -> Optional[ToolDefinition]:
+    def get_tool(self, name: str) -> ToolDefinition | None:
         return self._tools.get(name)
 
-    def list_tools(self) -> List[ToolDefinition]:
+    def list_tools(self) -> list[ToolDefinition]:
         return list(self._tools.values())
 
     async def execute(self, request: ToolExecutionRequest) -> ToolExecutionResult:
@@ -120,7 +122,7 @@ class ToolRuntimeEngine:
 
         start_time = time.perf_counter()
         attempts = 0
-        last_error: Optional[str] = None
+        last_error: str | None = None
         status = ExecutionStatus.RUNNING
 
         while attempts <= max_retries:

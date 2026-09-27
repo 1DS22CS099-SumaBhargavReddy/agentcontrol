@@ -4,7 +4,8 @@ Tracks token usage, computes estimated costs, and enforces budget policies per r
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -28,9 +29,9 @@ class UsageRecord(BaseModel):
 
 
 class CostLimitPolicy(BaseModel):
-    per_request_limit_usd: Optional[float] = None
-    agent_daily_limit_usd: Optional[float] = None
-    environment_monthly_limit_usd: Optional[float] = None
+    per_request_limit_usd: float | None = None
+    agent_daily_limit_usd: float | None = None
+    environment_monthly_limit_usd: float | None = None
 
 
 class CostBudgetExceededError(Exception):
@@ -42,7 +43,7 @@ class CostBudgetExceededError(Exception):
 
 
 # Standard enterprise pricing lookup ($ per 1k tokens)
-DEFAULT_PRICING: Dict[str, ModelPricing] = {
+DEFAULT_PRICING: dict[str, ModelPricing] = {
     "gpt-4o": ModelPricing(provider="openai", model_name="gpt-4o", prompt_cost_per_1k=0.005, completion_cost_per_1k=0.015),
     "gpt-4o-mini": ModelPricing(provider="openai", model_name="gpt-4o-mini", prompt_cost_per_1k=0.00015, completion_cost_per_1k=0.0006),
     "claude-3-5-sonnet": ModelPricing(provider="anthropic", model_name="claude-3-5-sonnet", prompt_cost_per_1k=0.003, completion_cost_per_1k=0.015),
@@ -59,16 +60,16 @@ class CostController:
     Manages real-time cost tracking, token budgeting, and limit enforcement.
     """
 
-    def __init__(self, pricing_table: Optional[Dict[str, ModelPricing]] = None):
+    def __init__(self, pricing_table: dict[str, ModelPricing] | None = None):
         self.pricing_table = pricing_table or DEFAULT_PRICING.copy()
-        self._usage_history: List[UsageRecord] = []
-        self._policies: Dict[str, CostLimitPolicy] = {}  # scope -> policy
+        self._usage_history: list[UsageRecord] = []
+        self._policies: dict[str, CostLimitPolicy] = {}  # scope -> policy
 
     def set_policy(self, scope: str, policy: CostLimitPolicy) -> None:
         """Sets a cost policy for an agent_id or environment (e.g., 'production', 'agent-123')."""
         self._policies[scope.lower()] = policy
 
-    def get_policy(self, scope: str) -> Optional[CostLimitPolicy]:
+    def get_policy(self, scope: str) -> CostLimitPolicy | None:
         return self._policies.get(scope.lower())
 
     def calculate_cost(self, model_name: str, prompt_tokens: int, completion_tokens: int) -> float:
@@ -167,7 +168,7 @@ class CostController:
     def get_total_spend(self) -> float:
         return sum(r.estimated_cost_usd for r in self._usage_history)
 
-    def get_metrics_summary(self) -> Dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, Any]:
         return {
             "total_requests": len(self._usage_history),
             "total_tokens": sum(r.total_tokens for r in self._usage_history),

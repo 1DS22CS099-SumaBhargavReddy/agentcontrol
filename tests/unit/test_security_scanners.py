@@ -3,7 +3,6 @@ Unit tests for Security Guard Scanners
 Tests SSRF defense, cloud metadata blocking, dangerous schemes, and prompt injection detection.
 """
 
-import pytest
 from packages.security_guard.scanner import (
     BrowserScanner,
     PromptInjectionScanner,

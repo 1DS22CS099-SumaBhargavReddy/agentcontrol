@@ -3,12 +3,11 @@ Policy Engine Router
 Create, edit, version, and evaluate declarative YAML security policies.
 """
 
-from typing import Any, Dict, List, Optional
+import yaml
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-import yaml
 
 from apps.api.auth.service import AuthenticatedUser, get_current_user, require_role
 from apps.api.db.models import Policy
@@ -52,8 +51,8 @@ async def create_or_update_policy(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Malformed YAML policy syntax: {str(e)}"
-        )
+            detail=f"Malformed YAML policy syntax: {e}",
+        ) from e
 
     # Deactivate existing policies for this environment
     stmt = select(Policy).where(Policy.environment == payload.environment.lower())
@@ -82,9 +81,9 @@ async def create_or_update_policy(
     )
 
 
-@router.get("", response_model=List[PolicyResponse])
+@router.get("", response_model=list[PolicyResponse])
 async def list_policies(
-    environment: Optional[str] = None,
+    environment: str | None = None,
     db: AsyncSession = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
 ):

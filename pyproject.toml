@@ -74,10 +74,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/agentcontrol/agentcontrol"
+Homepage = "https://github.com/1DS22CS099-SumaBhargavReddy/agentcontrol"
 Documentation = "https://docs.agentcontrol.dev"
-Repository = "https://github.com/agentcontrol/agentcontrol.git"
-Issues = "https://github.com/agentcontrol/agentcontrol/issues"
+Repository = "https://github.com/1DS22CS099-SumaBhargavReddy/agentcontrol.git"
+Issues = "https://github.com/1DS22CS099-SumaBhargavReddy/agentcontrol/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -107,6 +107,7 @@ select = [
 ignore = [
     "E501",  # line too long (handled by formatter)
     "B008",  # do not perform function calls in argument defaults (FastAPI Depends)
+    "E712",  # Allow SQLAlchemy binary expressions like Model.is_active == True
 ]
 
 [tool.pytest.ini_options]

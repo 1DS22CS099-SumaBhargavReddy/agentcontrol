@@ -3,7 +3,6 @@ Security Guard Scanner Router
 Live scanning endpoints for Browser URL SSRF defense, prompt injection detection, and untrusted payload wrapping.
 """
 
-from typing import Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 

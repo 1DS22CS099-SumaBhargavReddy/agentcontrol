@@ -4,7 +4,8 @@ Fine-grained, least-privilege permission enforcement with deterministic deny-pre
 """
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -15,15 +16,15 @@ class PermissionEffect(str, Enum):
 
 class PermissionRule(BaseModel):
     """A granular permission rule defining what an agent can perform on a resource."""
-    id: Optional[str] = None
+    id: str | None = None
     agent_id: str = Field(..., description="Agent ID or wildcard '*'")
     environment: str = Field(..., description="Target environment (e.g. 'production', 'staging', 'development', '*')")
     service: str = Field(..., description="Service namespace (e.g. 'github', 'kubernetes', 'aws')")
     resource: str = Field(..., description="Resource name or pattern (e.g. 'pods', 'ec2', 'repository', '*')")
     action: str = Field(..., description="Action name (e.g. 'read', 'write', 'delete', 'restart', '*')")
     effect: PermissionEffect = Field(default=PermissionEffect.ALLOW, description="allow or deny")
-    conditions: Dict[str, Any] = Field(default_factory=dict, description="Context conditions (e.g. namespace=prod)")
-    description: Optional[str] = None
+    conditions: dict[str, Any] = Field(default_factory=dict, description="Context conditions (e.g. namespace=prod)")
+    description: str | None = None
 
 
 class PermissionCheckRequest(BaseModel):
@@ -33,14 +34,14 @@ class PermissionCheckRequest(BaseModel):
     service: str
     resource: str
     action: str
-    context: Dict[str, Any] = Field(default_factory=dict)
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 class PermissionCheckResult(BaseModel):
     """Result of permission verification."""
     allowed: bool
     reason: str
-    matched_rule: Optional[PermissionRule] = None
+    matched_rule: PermissionRule | None = None
     effect: PermissionEffect = PermissionEffect.DENY
     evaluated_rules_count: int = 0
 
@@ -54,16 +55,16 @@ class PermissionEngine:
     3. If no matching rule is found, default DENY is returned.
     """
 
-    def __init__(self, rules: Optional[List[PermissionRule]] = None):
-        self._rules: List[PermissionRule] = rules or []
+    def __init__(self, rules: list[PermissionRule] | None = None):
+        self._rules: list[PermissionRule] = rules or []
 
     def add_rule(self, rule: PermissionRule) -> None:
         self._rules.append(rule)
 
-    def load_rules(self, rules: List[PermissionRule]) -> None:
+    def load_rules(self, rules: list[PermissionRule]) -> None:
         self._rules = list(rules)
 
-    def get_rules_for_agent(self, agent_id: str) -> List[PermissionRule]:
+    def get_rules_for_agent(self, agent_id: str) -> list[PermissionRule]:
         return [r for r in self._rules if r.agent_id in (agent_id, "*")]
 
     @staticmethod
@@ -77,7 +78,7 @@ class PermissionEngine:
         return False
 
     @staticmethod
-    def _match_conditions(rule_conditions: Dict[str, Any], context: Dict[str, Any]) -> bool:
+    def _match_conditions(rule_conditions: dict[str, Any], context: dict[str, Any]) -> bool:
         if not rule_conditions:
             return True
         for key, expected_val in rule_conditions.items():
@@ -100,7 +101,7 @@ class PermissionEngine:
         - Service / Resource / Action match
         - Condition matching against contextual arguments
         """
-        matched_allow: Optional[PermissionRule] = None
+        matched_allow: PermissionRule | None = None
         evaluated_count = 0
 
         for rule in self._rules:

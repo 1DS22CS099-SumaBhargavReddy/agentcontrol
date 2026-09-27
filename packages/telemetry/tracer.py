@@ -3,16 +3,17 @@ AgentControl OpenTelemetry Instrumentation
 Instruments agent trajectories and tool gates using GenAI semantic conventions.
 """
 
-from contextlib import asynccontextmanager, contextmanager
-from datetime import datetime, timezone
-import json
 import time
-from typing import Any, Dict, Generator, List, Optional
+from collections.abc import Generator
+from contextlib import contextmanager
+from datetime import datetime, timezone
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 try:
     from opentelemetry import trace
-    from opentelemetry.trace import StatusCode, Status
+    from opentelemetry.trace import Status, StatusCode
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
@@ -21,16 +22,16 @@ except ImportError:
 class TelemetrySpan(BaseModel):
     span_id: str
     trace_id: str
-    parent_span_id: Optional[str] = None
+    parent_span_id: str | None = None
     name: str
     operation_name: str
     start_time: str
-    end_time: Optional[str] = None
-    duration_ms: Optional[float] = None
+    end_time: str | None = None
+    duration_ms: float | None = None
     status: str = "ok"  # ok, error
-    error_message: Optional[str] = None
-    attributes: Dict[str, Any] = Field(default_factory=dict)
-    events: List[Dict[str, Any]] = Field(default_factory=list)
+    error_message: str | None = None
+    attributes: dict[str, Any] = Field(default_factory=dict)
+    events: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class TelemetryManager:
@@ -44,10 +45,10 @@ class TelemetryManager:
     def __init__(self, service_name: str = "agentcontrol"):
         self.service_name = service_name
         self._tracer = trace.get_tracer(service_name) if OTEL_AVAILABLE else None
-        self._recent_traces: Dict[str, List[TelemetrySpan]] = {}
+        self._recent_traces: dict[str, list[TelemetrySpan]] = {}
         self._max_stored_traces = 500
 
-    def sanitize_attributes(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+    def sanitize_attributes(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """Redacts sensitive values to prevent credential leakage in traces."""
         sanitized = {}
         for k, v in attrs.items():
@@ -71,10 +72,10 @@ class TelemetryManager:
             self._recent_traces[span.trace_id] = []
         self._recent_traces[span.trace_id].append(span)
 
-    def get_trace(self, trace_id: str) -> List[TelemetrySpan]:
+    def get_trace(self, trace_id: str) -> list[TelemetrySpan]:
         return self._recent_traces.get(trace_id, [])
 
-    def list_recent_traces(self, limit: int = 50) -> List[Dict[str, Any]]:
+    def list_recent_traces(self, limit: int = 50) -> list[dict[str, Any]]:
         traces_summary = []
         for tid, spans in reversed(list(self._recent_traces.items())):
             if not spans:
@@ -101,8 +102,8 @@ class TelemetryManager:
         operation_name: str,
         trace_id: str,
         span_id: str,
-        parent_span_id: Optional[str] = None,
-        attributes: Optional[Dict[str, Any]] = None
+        parent_span_id: str | None = None,
+        attributes: dict[str, Any] | None = None
     ) -> Generator[TelemetrySpan, None, None]:
         start_ts = datetime.now(timezone.utc).isoformat()
         t0 = time.perf_counter()

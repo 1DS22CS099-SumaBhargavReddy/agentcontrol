@@ -3,7 +3,8 @@ AgentControl LangGraph Integration
 Middleware and node wrappers for gating LangGraph tool execution through the AgentControl control plane.
 """
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+
 from packages.sdk.client import AgentControl, ToolExecutionResponse
 
 
@@ -26,7 +27,7 @@ class AgentControlToolNode:
         self.wait_for_approval = wait_for_approval
         self.agent = control.agent(name=agent_id, environment=environment)
 
-    async def __call__(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def __call__(self, state: dict[str, Any]) -> dict[str, Any]:
         """
         Executes pending tool calls found in the LangGraph state messages.
         """

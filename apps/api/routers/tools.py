@@ -3,7 +3,8 @@ Tool Registry Router
 Central registry for tools, risk levels, and schemas.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -23,8 +24,8 @@ class ToolCreate(BaseModel):
     risk_level: str = Field(default="medium", description="low, medium, high, critical")
     owner: str = "platform-team"
     is_mcp_discovered: bool = False
-    parameters_schema: Dict[str, Any] = Field(default_factory=dict)
-    tags: List[str] = Field(default_factory=list)
+    parameters_schema: dict[str, Any] = Field(default_factory=dict)
+    tags: list[str] = Field(default_factory=list)
     timeout_seconds: float = 30.0
 
 
@@ -36,8 +37,8 @@ class ToolResponse(BaseModel):
     risk_level: str
     owner: str
     is_mcp_discovered: bool
-    parameters_schema: Dict[str, Any]
-    tags: List[str]
+    parameters_schema: dict[str, Any]
+    tags: list[str]
     timeout_seconds: float
     created_at: str
     updated_at: str
@@ -88,10 +89,10 @@ async def register_tool(
     )
 
 
-@router.get("", response_model=List[ToolResponse])
+@router.get("", response_model=list[ToolResponse])
 async def list_tools(
-    risk_level: Optional[str] = None,
-    is_mcp: Optional[bool] = None,
+    risk_level: str | None = None,
+    is_mcp: bool | None = None,
     db: AsyncSession = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
 ):

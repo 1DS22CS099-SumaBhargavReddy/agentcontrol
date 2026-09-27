@@ -3,9 +3,8 @@ Agent Evaluation & System Metrics Router
 Trajectory evaluation, regression tracking, and aggregated operational dashboards.
 """
 
-from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 

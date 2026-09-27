@@ -3,7 +3,8 @@ Agent Registry Router
 CRUD endpoints for registering and inspecting AI agents.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -18,24 +19,24 @@ router = APIRouter(prefix="/agents", tags=["Agents"])
 
 class AgentCreate(BaseModel):
     name: str = Field(..., description="Unique name of the agent")
-    description: Optional[str] = None
+    description: str | None = None
     owner: str = Field(default="platform-team")
     environment: str = Field(default="production")
     version: str = Field(default="1.0.0")
-    capabilities: List[str] = Field(default_factory=list)
-    metadata_info: Dict[str, Any] = Field(default_factory=dict)
+    capabilities: list[str] = Field(default_factory=list)
+    metadata_info: dict[str, Any] = Field(default_factory=dict)
 
 
 class AgentResponse(BaseModel):
     id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     owner: str
     environment: str
     version: str
     status: str
-    capabilities: List[str]
-    metadata_info: Dict[str, Any]
+    capabilities: list[str]
+    metadata_info: dict[str, Any]
     created_at: str
     updated_at: str
 
@@ -83,9 +84,9 @@ async def register_agent(
     )
 
 
-@router.get("", response_model=List[AgentResponse])
+@router.get("", response_model=list[AgentResponse])
 async def list_agents(
-    environment: Optional[str] = None,
+    environment: str | None = None,
     db: AsyncSession = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
 ):

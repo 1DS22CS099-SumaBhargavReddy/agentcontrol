@@ -3,8 +3,8 @@ Model Context Protocol (MCP) Router
 Endpoints to connect external MCP servers and discover tools.
 """
 
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,7 @@ _mcp_gateway = MCPGateway(runtime_engine=runtime_engine)
 
 class MCPConnectRequest(BaseModel):
     server_endpoint: str = Field(..., description="HTTP/SSE URL of external MCP server")
-    auth_token: Optional[str] = None
+    auth_token: str | None = None
 
 
 @router.post("/discover", response_model=MCPDiscoveryResult)

@@ -4,11 +4,13 @@ Validates unauthorized access blocking, SSRF containment, prompt injection defen
 """
 
 from datetime import datetime, timedelta, timezone
+
 import pytest
 from httpx import ASGITransport, AsyncClient
-from apps.api.main import app, seed_initial_demo_data
+
 from apps.api.db.models import ApprovalRequest
 from apps.api.db.session import AsyncSessionLocal, init_db
+from apps.api.main import app, seed_initial_demo_data
 
 
 @pytest.fixture(autouse=True)

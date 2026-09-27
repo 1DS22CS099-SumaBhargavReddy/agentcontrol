@@ -4,7 +4,8 @@ Wraps OpenAI function tools so that any function execution is gated by the Agent
 """
 
 import json
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+
 from packages.sdk.client import AgentControl, ToolExecutionResponse
 
 
@@ -19,7 +20,7 @@ class OpenAIControlledTool:
         control: AgentControl,
         name: str,
         description: str,
-        parameters_schema: Dict[str, Any],
+        parameters_schema: dict[str, Any],
         agent_id: str,
         environment: str = "production",
         risk_level: str = "medium"
@@ -33,7 +34,7 @@ class OpenAIControlledTool:
         self.risk_level = risk_level
         self.agent = control.agent(name=agent_id, environment=environment)
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Converts to standard OpenAI ChatCompletions/Agents tool schema."""
         return {
             "type": "function",
@@ -44,7 +45,7 @@ class OpenAIControlledTool:
             }
         }
 
-    async def execute_from_openai_call(self, function_arguments_str: str) -> Dict[str, Any]:
+    async def execute_from_openai_call(self, function_arguments_str: str) -> dict[str, Any]:
         """Parses OpenAI JSON arguments string and executes through AgentControl."""
         try:
             args = json.loads(function_arguments_str) if isinstance(function_arguments_str, str) else function_arguments_str

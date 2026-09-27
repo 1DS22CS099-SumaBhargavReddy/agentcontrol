@@ -3,13 +3,14 @@ AgentControl Evaluation Framework
 Evaluates agent trajectory quality, safety compliance, tool selection efficiency, and regression tracking.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class TrajectoryStep(BaseModel):
     tool_name: str
-    arguments: Dict[str, Any] = Field(default_factory=dict)
+    arguments: dict[str, Any] = Field(default_factory=dict)
     status: str = "success"  # success, failed, rejected
     is_necessary: bool = True
     policy_violation: bool = False
@@ -22,8 +23,8 @@ class EvaluationInput(BaseModel):
     run_id: str
     agent_id: str
     task_goal: str
-    expected_tools: List[str] = Field(default_factory=list)
-    trajectory: List[TrajectoryStep] = Field(default_factory=list)
+    expected_tools: list[str] = Field(default_factory=list)
+    trajectory: list[TrajectoryStep] = Field(default_factory=list)
     task_completed: bool = True
     total_tokens: int = 0
     total_cost_usd: float = 0.0
@@ -131,7 +132,7 @@ class AgentEvaluator:
         current: EvaluationReport,
         baseline: EvaluationReport,
         tolerance: float = 0.05
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Detects whether an agent update degraded performance or safety.
         """
